@@ -40,12 +40,7 @@ set_target_properties(libswresample
         PROPERTIES IMPORTED_LOCATION
         ${JNI_LIBS_DIR}/${ANDROID_ABI}/libswresample.so)
 
-add_library(libpostproc SHARED IMPORTED)
-set_target_properties(libpostproc
-        PROPERTIES IMPORTED_LOCATION
-        ${JNI_LIBS_DIR}/${ANDROID_ABI}/libpostproc.so)
-
-#include_directories(${JNI_LIBS_DIR}/include)
+include_directories(${JNI_LIBS_DIR}/include)
 
 target_link_libraries(
         native-lib
@@ -57,5 +52,4 @@ target_link_libraries(
         libavfilter
         libswscale
         libswresample
-        libpostproc
         )
