@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 29
-    buildToolsVersion "30.0.2"
+    buildToolsVersion "29.0.3"
 
     defaultConfig {
         applicationId "com.iamzzj.ffmpeg"
@@ -18,7 +18,8 @@ android {
         }
         externalNativeBuild {
             cmake {
-                cppFlags ""
+                cppFlags "-fexceptions"
+                abiFilters "armeabi-v7a"
             }
         }
     }
@@ -37,7 +38,7 @@ android {
     }
     sourceSets {
         main {
-            jniLibs.srcDirs = ['jniLibs']
+            jniLibs.srcDirs = ['src/main/jniLibs']
         }
     }
 }
