@@ -1,6 +1,6 @@
 #!/bin/bash
 
-API=19
+API=21
 #armv7-a
 ARCH=armv7 
 
@@ -16,6 +16,7 @@ build()
 --enable-shared \
 --enable-small \
 --enable-gpl \
+--disable-postproc \
 --disable-doc \
 --disable-programs \
 --disable-avdevice \

@@ -16,6 +16,8 @@ build()
 --disable-static \
 --enable-shared \
 --enable-small \
+--enable-gpl \
+--disable-postproc \
 --disable-doc \
 --disable-programs \
 --disable-avdevice \
