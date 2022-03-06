@@ -1,11 +1,71 @@
 #include <jni.h>
 #include <string>
-#include "AndroidLogDefine.h"
+#include <SLES/OpenSLES.h>
+#include <SLES/OpenSLES_Android.h>
+#include <AndroidLogDefine.h>
 
 extern "C" {
-#include "libavformat/avformat.h"
-#include "libavutil/avutil.h"
-#include "libavcodec/avcodec.h"
+#include <libavformat/avformat.h>
+#include <libavutil/avutil.h>
+#include <libavcodec/avcodec.h>
+}
+
+void playerCallback(SLAndroidSimpleBufferQueueItf caller, void *pContext) {
+    
+}
+
+void initOpenSLES(){
+    // 创建接口引擎对象
+    SLObjectItf  engine_object = NULL;
+    SLEngineItf engine_engine;
+    slCreateEngine(&engine_object,0,NULL,0,NULL,NULL);
+
+    (*engine_object)->Realize(engine_object, SL_BOOLEAN_FALSE);
+    (*engine_object)->GetInterface(engine_object, SL_IID_ENGINE, &engine_engine);
+
+    // 设置混音器
+    static SLObjectItf output_mix_object = NULL;
+    const SLInterfaceID ids[1] = {SL_IID_ENVIRONMENTALREVERB};
+    const SLboolean req[1] = {SL_BOOLEAN_FALSE};
+    (*engine_engine)->CreateOutputMix(engine_engine, &output_mix_object, 1, ids, req);
+    (*output_mix_object)->Realize(output_mix_object, SL_BOOLEAN_FALSE);
+    SLEnvironmentalReverbItf output_mix_environmental_reverb = NULL;
+    (*output_mix_object)->GetInterface(output_mix_object, SL_IID_ENVIRONMENTALREVERB,
+                                       &output_mix_environmental_reverb);
+    SLEnvironmentalReverbSettings reverb_settings = SL_I3DL2_ENVIRONMENT_PRESET_STONECORRIDOR;
+    (*output_mix_environmental_reverb)->SetEnvironmentalReverbProperties(output_mix_environmental_reverb,
+                                                                         &reverb_settings);
+
+    // 创建播放器
+    SLObjectItf pPlayer = NULL;
+    SLPlayItf pPlayItf = NULL;
+    SLDataLocator_AndroidSimpleBufferQueue simpleBufferQueue = {
+            SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
+    SLDataFormat_PCM formatPcm = {
+            SL_DATAFORMAT_PCM,
+            2,
+            SL_SAMPLINGRATE_44_1,
+            SL_PCMSAMPLEFORMAT_FIXED_16,
+            SL_PCMSAMPLEFORMAT_FIXED_16,
+            SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT,
+            SL_BYTEORDER_LITTLEENDIAN};
+    SLDataSource audioSrc = {&simpleBufferQueue, &formatPcm};
+    SLDataLocator_OutputMix outputMix = {SL_DATALOCATOR_OUTPUTMIX, output_mix_object};
+    SLDataSink audioSnk = {&outputMix, NULL};
+    SLInterfaceID interfaceIds[3] = {SL_IID_BUFFERQUEUE, SL_IID_VOLUME, SL_IID_PLAYBACKRATE};
+    SLboolean interfaceRequired[3] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
+    (*engine_engine)->CreateAudioPlayer(engine_engine, &pPlayer, &audioSrc, &audioSnk, 3,
+                                       interfaceIds, interfaceRequired);
+    (*pPlayer)->Realize(pPlayer, SL_BOOLEAN_FALSE);
+    (*pPlayer)->GetInterface(pPlayer, SL_IID_PLAY, &pPlayItf);
+    // 3.4 设置缓存队列和回调函数
+    SLAndroidSimpleBufferQueueItf playerBufferQueue;
+    (*pPlayer)->GetInterface(pPlayer, SL_IID_BUFFERQUEUE, &playerBufferQueue);
+    (*playerBufferQueue)->RegisterCallback(playerBufferQueue, playerCallback, NULL);
+    // 3.5 设置播放状态
+    (*pPlayItf)->SetPlayState(pPlayItf, SL_PLAYSTATE_PLAYING);
+    // 3.6 调用回调函数
+    //playerCallback(playerBufferQueue, NULL);
 }
 
 extern "C" JNIEXPORT jstring JNICALL
@@ -16,10 +76,13 @@ Java_com_iamzzj_ffmpeg_MainActivity_stringFromJNI(
 
     return env->NewStringUTF(hello);
 }
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_iamzzj_ffmpeg_MainActivity_nPlay(JNIEnv *env, jobject thiz, jstring url_) {
     const char *url = env->GetStringUTFChars(url_, 0);
+
+    initOpenSLES();
 
     av_register_all();
 
