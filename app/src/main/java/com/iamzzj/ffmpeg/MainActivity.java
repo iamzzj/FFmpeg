@@ -3,7 +3,11 @@ package com.iamzzj.ffmpeg;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.widget.TextView;
+
+import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -20,6 +24,12 @@ public class MainActivity extends AppCompatActivity {
         // Example of a call to a native method
         TextView tv = findViewById(R.id.sample_text);
         tv.setText(stringFromJNI());
+
+        File file = Environment.getExternalStorageDirectory().getAbsoluteFile();
+
+        String url = new File(file, "test.mp4").getAbsolutePath();
+
+        nPlay(url);
     }
 
     /**
@@ -27,4 +37,6 @@ public class MainActivity extends AppCompatActivity {
      * which is packaged with this application.
      */
     public native String stringFromJNI();
+
+    public native void nPlay(String url);
 }

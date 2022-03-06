@@ -3,9 +3,10 @@ cmake_minimum_required(VERSION 3.4.1)
 find_library(log-lib log)
 find_library(android-lib android)
 
+FILE(GLOB SRC_C ${CMAKE_SOURCE_DIR}/*.cpp)
 add_library(native-lib
             SHARED
-            native-lib.cpp)
+            ${SRC_C})
 
 set(JNI_LIBS_DIR ${CMAKE_SOURCE_DIR}/../jniLibs)
 #导入FFmpeg的库
@@ -40,6 +41,7 @@ set_target_properties(libswresample
         PROPERTIES IMPORTED_LOCATION
         ${JNI_LIBS_DIR}/${ANDROID_ABI}/libswresample.so)
 
+include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${JNI_LIBS_DIR}/include)
 
 target_link_libraries(
