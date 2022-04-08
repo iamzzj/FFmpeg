@@ -8,6 +8,7 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libavutil/avutil.h>
 #include <libavcodec/avcodec.h>
+#include <libavdevice/avdevice.h>
 }
 
 void playerCallback(SLAndroidSimpleBufferQueueItf caller, void *pContext) {
@@ -84,7 +85,7 @@ Java_com_iamzzj_ffmpeg_MainActivity_nPlay(JNIEnv *env, jobject thiz, jstring url
 
     initOpenSLES();
 
-    av_register_all();
+    avdevice_register_all();
 
     // 播放网络流需要
     avformat_network_init();
@@ -94,7 +95,7 @@ Java_com_iamzzj_ffmpeg_MainActivity_nPlay(JNIEnv *env, jobject thiz, jstring url
     int best_audio_index;
     AVFormatContext *p_avformat_context = NULL;
     AVCodecParameters *p_avcodec_pars = NULL;
-    AVCodec *p_avcodec = NULL;
+    const AVCodec *p_avcodec = NULL;
     AVCodecContext *p_avcodec_context = NULL;
     AVPacket *p_avpacket = NULL;
     AVFrame *p_avframe = NULL;
